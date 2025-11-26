@@ -25,4 +25,4 @@ jobs:
         "
 
     - name: Deployment Successful
-      run: echo "🚀 Deployment completed successfully!"
+      run: echo "🚀 Deployment completed successfully! "

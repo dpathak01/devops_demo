@@ -1,0 +1,41 @@
+name: CI/CD to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to EC2 Server
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+        chmod 600 ~/.ssh/ec2_key
+
+    - name: Disable Host Key Checking
+      run: |
+        echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/ec2_key ubuntu@${{ secrets.EC2_HOST }} "
+          cd /var/www/html/devops_demo &&
+          git fetch --all &&
+          git reset --hard origin/main &&
+          git pull origin main
+        "
+
+    # OPTIONAL: If you have Node, Python, PM2 or Apache service
+    - name: Restart Application (Optional)
+      run: |
+        ssh -i ~/.ssh/ec2_key ubuntu@${{ secrets.EC2_HOST }} "
+          sudo systemctl restart apache2 || true
+        "

@@ -19,7 +19,7 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} "
+        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@3.111.41.142 "
           cd /var/www/html/devops_demo &&
           git pull origin main
         "

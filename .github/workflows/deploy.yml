@@ -2,27 +2,24 @@ name: Deploy to EC2
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
   deploy:
-    name: Deploy to AWS EC2
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Setup SSH Key
+    - name: Add SSH Key
       run: |
-        echo "${{ secrets.EC2_SSH_KEY }}" > key.pem && chmod 600 key.pem
+        echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
         chmod 600 key.pem
 
-    - name: Deploy to EC2 via SSH
+    - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} "
-          git config --global --add safe.directory /var/www/html/devops_demo &&
+        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@YOUR_EC2_IP "
           cd /var/www/html/devops_demo &&
           git pull origin main
         "

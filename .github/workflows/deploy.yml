@@ -1,4 +1,4 @@
-name: CI/CD to EC2
+name: Deploy to EC2
 
 on:
   push:
@@ -7,35 +7,25 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to EC2 Server
+    name: Deploy to AWS EC2
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Setup SSH Key
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
-        chmod 600 ~/.ssh/ec2_key
+        echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+        chmod 600 key.pem
 
-    - name: Disable Host Key Checking
+    - name: Deploy to EC2 via SSH
       run: |
-        echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-
-    - name: Deploy to EC2
-      run: |
-        ssh -i ~/.ssh/ec2_key ubuntu@${{ secrets.EC2_HOST }} "
-          cd /var/www/html/devops_demo &&
-          git fetch --all &&
-          git reset --hard origin/main &&
-          git pull origin main
+        ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+          cd /var/www/html/devops_demo && \
+          sudo git pull origin main && \
+          sudo chown -R ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} /var/www/testing/devops_demo
         "
 
-    # OPTIONAL: If you have Node, Python, PM2 or Apache service
-    - name: Restart Application (Optional)
-      run: |
-        ssh -i ~/.ssh/ec2_key ubuntu@${{ secrets.EC2_HOST }} "
-          sudo systemctl restart apache2 || true
-        "
+    - name: Deployment Successful
+      run: echo "🚀 Deployment completed successfully!"
